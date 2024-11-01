@@ -250,6 +250,9 @@ public:
 
         if (tokens.empty()) throw invalid_argument("Query cannot be empty.");
 
+        // for(int i=0;i<tokens.size();i++){
+        //     cout<<tokens[i]<<endl;
+        // }
         parsedQuery.command = tokens[0];
         size_t i = 1;
 
@@ -321,6 +324,12 @@ public:
     }
 
     void execute(const ParsedQuery &parsedQuery) {
+        // cout<<parsedQuery.table<<endl;
+        if(parsedQuery.command=="CREATE"){
+            db.createTable(parsedQuery.table);
+            return;
+        }
+        
         Table &table = db.getTable(parsedQuery.table);
 
         if (parsedQuery.command == "SELECT") {
