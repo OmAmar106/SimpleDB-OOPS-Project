@@ -14,6 +14,7 @@ struct ParsedQuery {
     string command;
     string table;
     vector<string> columns;
+    vector<string> columnTypes;//new field for column type
     vector<string> values;
     string conditionColumn;
     string conditionOperator;
@@ -35,6 +36,7 @@ class Table {
 private:
     string name;
     vector<string> columns;
+    vector<string> columnTypes; //...new edit for coloumn type
     vector<vector<string>> rows;
 
     void writeToFile() {
@@ -55,8 +57,8 @@ private:
     }
 
 public:
-    Table(const string &name) : name(name) {}
-    
+    //Table(const string &name) : name(name) {}
+    Table(const string &name, const vector<string> &cols, const vector<string> &types) : name(name), columns(cols), columnTypes(types) {}
     void createFile() {
         ofstream file(name + ".csv");
         if (!file.is_open()) {
@@ -216,14 +218,22 @@ public:
     //     tables.at(tableName).loadFromFile();
     // }
       
-    void createTable(const string &tableName) {
-        if (tables.find(tableName) == tables.end()) {
-            // Use emplace to construct the Table object in place with tableName
-            tables.emplace(tableName, Table(tableName));
+    // void createTable(const string &tableName) {
+    //     if (tables.find(tableName) == tables.end()) {
+    //         // Use emplace to construct the Table object in place with tableName
+    //         tables.emplace(tableName, Table(tableName));
             
-            // Call methods after the table is created
-            tables.at(tableName).createFile();
-            tables.at(tableName).loadFromFile();
+    //         // Call methods after the table is created
+    //         tables.at(tableName).createFile();
+    //         tables.at(tableName).loadFromFile();
+    //     } else {
+    //         cout << "Error: Table '" << tableName << "' already exists.\n";
+    //     }
+    // }
+    void createTable(const string &tableName, const vector<string> &columns, const vector<string> &columnTypes) {
+        if (tables.find(tableName) == tables.end()) {
+            tables.emplace(tableName, Table(tableName, columns, columnTypes));
+            tables.at(tableName).createFile();  // Initialize the file
         } else {
             cout << "Error: Table '" << tableName << "' already exists.\n";
         }
@@ -257,10 +267,25 @@ public:
         size_t i = 1;
 
         // Command-specific parsing logic
+        // if (parsedQuery.command == "CREATE") {
+        //     if (tokens[i++] != "TABLE") throw invalid_argument("Expected TABLE keyword after CREATE.");
+        //     parsedQuery.table = tokens[i++];
+        // } 
         if (parsedQuery.command == "CREATE") {
             if (tokens[i++] != "TABLE") throw invalid_argument("Expected TABLE keyword after CREATE.");
             parsedQuery.table = tokens[i++];
-        } 
+
+            if (tokens[i++] != "(") throw invalid_argument("Expected '(' after table name.");
+
+                // Parse column names and types
+                while (tokens[i] != ")") {
+                    parsedQuery.columns.push_back(tokens[i++]);
+                    parsedQuery.columnTypes.push_back(tokens[i++].substr(0, tokens[i].length() - 1));  // Strip trailing ','
+
+                    if (tokens[i] == ")") break;  // End parsing on ')'
+                    else if (tokens[i++] != ",") throw invalid_argument("Expected ',' between columns.");
+                }
+        }
         else if (parsedQuery.command == "INSERT") {
             if (tokens[i++] != "INTO") throw invalid_argument("Expected INTO keyword after INSERT.");
             parsedQuery.table = tokens[i++];
@@ -325,11 +350,15 @@ public:
 
     void execute(const ParsedQuery &parsedQuery) {
         // cout<<parsedQuery.table<<endl;
-        if(parsedQuery.command=="CREATE"){
-            db.createTable(parsedQuery.table);
+        // if(parsedQuery.command=="CREATE"){
+        //     db.createTable(parsedQuery.table);
+        //     return;
+        // }
+        if (parsedQuery.command == "CREATE") {
+            db.createTable(parsedQuery.table, parsedQuery.columns, parsedQuery.columnTypes);
+            cout << "Table '" << parsedQuery.table << "' created successfully.\n";
             return;
         }
-        
         Table &table = db.getTable(parsedQuery.table);
 
         if (parsedQuery.command == "SELECT") {
