@@ -25,6 +25,7 @@ struct ParsedQuery {
 };
 
 vector<string> tokenize(const string& query) {
+    
     istringstream stream(query);
     vector<string> tokens;
     string token;
@@ -75,7 +76,7 @@ public:
         }
         createFile();
     }
-    //Table(const string &name) : name(name) {}
+
     Table(const string &name, const vector<string> &cols, const vector<string> &types) : name(name), columns(cols), columnTypes(types) {}
     Table(const string &name) : name(name) {}
     void createFile() {
@@ -285,12 +286,11 @@ public:
         }
         cout<<endl;
     }
-    // Load all tables from existing files
+
     void loadExistingTables(){
         string directoryPath = "./*.csv";
-        WIN32_FIND_DATAA findFileData;    // Use ANSI version
-        HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);  // Use FindFirstFileA for ANSI
-
+        WIN32_FIND_DATAA findFileData;
+        HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData); 
         if (hFind == INVALID_HANDLE_VALUE) {
             cerr << "Failed to open directory or no CSV files found." << endl;
             return;
@@ -392,6 +392,7 @@ public:
                     if (tokens[i] == ")") break;
                     else if (tokens[i++] != ",") throw invalid_argument("Expected ',' between columns.");
                 }
+
         }
         else if (parsedQuery.command == "INSERT") {
             if (tokens[i++] != "INTO") throw invalid_argument("Expected INTO keyword after INSERT.");
@@ -406,6 +407,7 @@ public:
             while (tokens[i] != "FROM") {
                 parsedQuery.columns.push_back(tokens[i++]);
             }
+
             i++;
             parsedQuery.table = tokens[i++];
             
@@ -481,12 +483,14 @@ public:
         //     db.createTable(parsedQuery.table);
         //     return;
         // }
+
         if (parsedQuery.command=="SHOW" && parsedQuery.other=="TABLE"){
             db.print();
             return;;
         }
         if (parsedQuery.command == "CREATE") {
             db.createTable(parsedQuery.table, parsedQuery.columns, parsedQuery.columnTypes);
+
             cout << "Table '" << parsedQuery.table << "' created successfully.\n";
             return;
         }
@@ -500,14 +504,13 @@ public:
 
         if (parsedQuery.command == "SELECT") {
 
-            auto selectedRows = table.selectRows(parsedQuery.columns, parsedQuery.conditionColumn,
-                                                parsedQuery.conditionOperator, parsedQuery.conditionValue);
+            auto selectedRows = table.selectRows(parsedQuery.columns, parsedQuery.conditionColumn,parsedQuery.conditionOperator, parsedQuery.conditionValue);
+            
             if (selectedRows.empty()) {
                 cout << "No results found.\n";
                 return;
             }
 
-            // Print the selected rows
             if (parsedQuery.columns[0]=="*"){
                 for (const auto &col : table.getcols()) {
                     cout << col << "\t";

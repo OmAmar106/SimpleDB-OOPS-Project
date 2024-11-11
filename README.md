@@ -42,10 +42,13 @@
    >> ISEQUAL tablename tablename1  
 ```
 ```bash
-   >> SHOW TABLES  
+   >> SHOW TABLES
 ```
 ```bash
    >> --Comment
+```
+```bash
+   >> EXIT
 ```
 
 ## Prerequisites
