@@ -10,9 +10,18 @@
 - Delete data entries
 - Simple, efficient storage and retrieval mechanisms
 
-## Getting Started
+## Commands
+```bash
+   >> CREATE TABLE tablename ( columnname datatype .. )
+   >> INSERT INTO tablename VALUES data
+   >> SELECT * FROM tablename
+   >> SELECT * FROM tablename where columnname = data
+   >> UPDATE tablename SET columnmname = newdata WHERE columnname = olddata
+   >> DELETE FROM tablename WHERE columnname = data
+   >>
+```
 
-### Prerequisites
+## Prerequisites
 
 To compile and run `simpleDB`, you need:
 

@@ -20,6 +20,7 @@ struct ParsedQuery {
     string conditionColumn;
     string conditionOperator;
     string conditionValue;
+    string other;
 };
 
 // Tokenize function to split the query into tokens
@@ -58,6 +59,19 @@ private:
     }
 
 public:
+    Table(const string &name1,const Table &copytable){
+        this->name = name1;
+        for(int i=0;i<copytable.columns.size();i++){
+            this->columns.push_back(copytable.columns[i]);
+        }
+        for(int i=0;i<copytable.columnTypes.size();i++){
+            this->columnTypes.push_back(copytable.columns[i]);
+        }
+        for(int i=0;i<copytable.rows.size();i++){
+            this->rows.push_back(copytable.rows[i]);
+        }
+        createFile();
+    }
     //Table(const string &name) : name(name) {}
     Table(const string &name, const vector<string> &cols, const vector<string> &types) : name(name), columns(cols), columnTypes(types) {}
     Table(const string &name) : name(name) {}
@@ -381,6 +395,21 @@ public:
                 parsedQuery.conditionValue = tokens[i++];
             }
         } 
+        else if (parsedQuery.command == "COPY") {
+            if (tokens[i++] != "FROM") throw invalid_argument("Expected FROM keyword after DELETE.");
+            parsedQuery.table = tokens[i++];
+            if (tokens[i++] != "TO") throw invalid_argument("Expected FROM keyword after DELETE.");
+            // Optional WHERE clause
+            parsedQuery.other = tokens[i++];
+            //ab is table ko find karna hain
+            
+            // if (i < tokens.size() && tokens[i] == "TO") {
+            //     i++;
+            //     parsedQuery.conditionColumn = tokens[i++];
+            //     parsedQuery.conditionOperator = tokens[i++];
+            //     parsedQuery.conditionValue = tokens[i++];
+            // }
+        } 
         else {
             throw invalid_argument("Unsupported command.");
         }
@@ -399,6 +428,12 @@ public:
             cout << "Table '" << parsedQuery.table << "' created successfully.\n";
             return;
         }
+
+        if (parsedQuery.command == "COPY") {
+            Table table(parsedQuery.other,parsedQuery.table);
+            return;
+        }
+
         Table &table = db.getTable(parsedQuery.table);
 
         if (parsedQuery.command == "SELECT") {
