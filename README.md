@@ -13,14 +13,32 @@
 ## Commands
 ```bash
    >> CREATE TABLE tablename ( columnname datatype .. )
+```
+```bash
    >> INSERT INTO tablename VALUES data
+```
+```bash
    >> SELECT * FROM tablename
+```
+```bash
    >> SELECT col1 , col2 .... FROM tablename
+```
+```bash
    >> SELECT * FROM tablename where columnname = data
+```
+```bash
    >> UPDATE tablename SET columnmname = newdata WHERE columnname = olddata
+```
+```bash
    >> DELETE FROM tablename WHERE columnname = data
+```
+```bash
    >> COPY FROM oldtable TO newtable
+```
+```bash
    >> DELETE tablename
+```
+```bash
    >> --Comment
 ```
 
