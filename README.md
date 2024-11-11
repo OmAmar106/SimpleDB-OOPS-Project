@@ -18,7 +18,7 @@
    >> SELECT * FROM tablename where columnname = data
    >> UPDATE tablename SET columnmname = newdata WHERE columnname = olddata
    >> DELETE FROM tablename WHERE columnname = data
-   >>
+   >> COPY FROM oldtable TO newtable
 ```
 
 ## Prerequisites
