@@ -39,6 +39,9 @@
    >> DELETE tablename
 ```
 ```bash
+   >> ISEQUAL tablename tablename1  
+```
+```bash
    >> --Comment
 ```
 

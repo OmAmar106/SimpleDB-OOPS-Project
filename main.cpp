@@ -24,7 +24,6 @@ struct ParsedQuery {
     string other;
 };
 
-// Tokenize function to split the query into tokens
 vector<string> tokenize(const string& query) {
     istringstream stream(query);
     vector<string> tokens;
@@ -39,7 +38,7 @@ class Table {
 private:
     string name;
     vector<string> columns;
-    vector<string> columnTypes; //...new edit for coloumn type
+    vector<string> columnTypes;
     vector<vector<string>> rows;
 
     void writeToFile() {
@@ -131,7 +130,6 @@ public:
         writeToFile();
     }
 
-   // Update rows based on a condition
     void updateRows(const string &column, const string &newValue, const string &conditionColumn, const string &conditionOperator, const string &conditionValue) {
         int colIndex = find(columns.begin(), columns.end(), column) - columns.begin();
         int condIndex = find(columns.begin(), columns.end(), conditionColumn) - columns.begin();
@@ -154,7 +152,6 @@ public:
         writeToFile();
     }
 
-    // Delete rows based on a condition
     void deleteRows(const string &conditionColumn, const string &conditionOperator, const string &conditionValue) {
         int condIndex = find(columns.begin(), columns.end(), conditionColumn) - columns.begin();
         if (condIndex >= columns.size()) {
@@ -182,12 +179,10 @@ public:
         vector<vector<string>> result;
         vector<int> selectedIndexes;
 
-        // Get indexes of the selected columns
         if (selectedCols.size() == 1 && selectedCols[0] == "*") {
             // If SELECT *, use all columns
             for (int i = 0; i < columns.size(); ++i) selectedIndexes.push_back(i);
         } else {
-            // Otherwise, get indexes of specified columns
             for (const auto &col : selectedCols) {
                 auto it = find(columns.begin(), columns.end(), col);
                 if (it == columns.end()) {
@@ -198,7 +193,6 @@ public:
             }
         }
 
-        // Get condition column index if condition is specified
         int condIndex = -1;
         if (!conditionColumn.empty()) {
             auto it = find(columns.begin(), columns.end(), conditionColumn);
@@ -231,6 +225,39 @@ public:
     vector<string> getcols(){
         return columns;
     }
+    bool operator==(const Table& tablename){
+        // string name;
+        // vector<string> columns;
+        // vector<string> columnTypes;
+        // vector<vector<string>> rows;
+        if (columns.size()==tablename.columns.size() && columnTypes.size()==tablename.columnTypes.size() && rows.size()==tablename.rows.size()){
+            for (int i=0;i<columns.size();i++){
+                if(columns[i]!=tablename.columns[i]){
+                    return false;
+                }
+            }
+            for (int i=0;i<columnTypes.size();i++){
+                if(columnTypes[i]!=tablename.columnTypes[i]){
+                    return false;
+                }
+            }
+            for(int i=0;i<rows.size();i++){
+                if(rows[i]!=tablename.rows[i]){
+                    return false;
+                }
+                for(int j=0;j<rows[i].size();j++){
+                    if(rows[i][j]!=tablename.rows[i][j]){
+                        return false;
+                    }
+                }
+            }
+        }
+        else{
+            return false;
+        }
+
+        return true;
+    }
 };
 
 class Database {
@@ -240,6 +267,9 @@ private:
 public:
     Database() {
         loadExistingTables();
+        // for(auto it:tables){
+        //     cout<<it.first<<endl;
+        // }
     }
 
     // Load all tables from existing files
@@ -254,22 +284,17 @@ public:
         }
 
         do {
-            // Get the filename of the found file
             string fileName = findFileData.cFileName;
             
-            // Check if the file has a ".csv" extension
             if (fileName.size() >= 4 && fileName.substr(fileName.size() - 4) == ".csv") {
-                // Remove ".csv" extension to get the table name
                 string tableName = fileName.substr(0, fileName.find_last_of('.'));
                 
-                // Insert the table into the map and load data from file
                 tables.emplace(tableName, Table(tableName));
                 tables.at(tableName).loadFromFile();
             }
             
-        } while (FindNextFileA(hFind, &findFileData) != 0);  // Continue finding the next file
+        } while (FindNextFileA(hFind, &findFileData) != 0);
 
-        // Close the handle after we’re done
         FindClose(hFind);
     }
     // void createTable(const string &tableName) {
@@ -293,7 +318,7 @@ public:
     void createTable(const string &tableName, const vector<string> &columns, const vector<string> &columnTypes) {
         if (tables.find(tableName) == tables.end()) {
             tables.emplace(tableName, Table(tableName, columns, columnTypes));
-            tables.at(tableName).createFile();  // Initialize the file
+            tables.at(tableName).createFile();
         } else {
             cout << "Error: Table '" << tableName << "' already exists.\n";
         }
@@ -427,7 +452,11 @@ public:
             //     parsedQuery.conditionOperator = tokens[i++];
             //     parsedQuery.conditionValue = tokens[i++];
             // }
-        } 
+        }
+        else if(parsedQuery.command=="ISEQUAL"){
+            parsedQuery.table = tokens[i++];
+            parsedQuery.other = tokens[i++];
+        }
         else {
             throw invalid_argument("Unsupported command.");
         }
@@ -511,6 +540,14 @@ public:
             }
             table.deleteRows(parsedQuery.conditionColumn, parsedQuery.conditionOperator, parsedQuery.conditionValue);
         }
+        else if(parsedQuery.command=="ISEQUAL"){
+            if(db.getTable(parsedQuery.table)==db.getTable(parsedQuery.other)){
+                cout<<"They are same."<<endl;
+            }
+            else{
+                cout<<"They are Different."<<endl;
+            }
+        } 
     }
 
 };
