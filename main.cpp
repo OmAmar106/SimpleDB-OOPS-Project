@@ -48,6 +48,7 @@ private:
             return;
         }
         for (size_t i = 0; i < columns.size(); ++i) {
+            // cout<<columns[i]<<endl;
             file << columns[i] << (i < columns.size() - 1 ? "," : "\n");
         }
         for (const auto& row : rows) {
@@ -61,11 +62,13 @@ private:
 public:
     Table(const string &name1,const Table &copytable){
         this->name = name1;
+
         for(int i=0;i<copytable.columns.size();i++){
+            // cout<<i<<endl;
             this->columns.push_back(copytable.columns[i]);
         }
         for(int i=0;i<copytable.columnTypes.size();i++){
-            this->columnTypes.push_back(copytable.columns[i]);
+            this->columnTypes.push_back(copytable.columnTypes[i]);
         }
         for(int i=0;i<copytable.rows.size();i++){
             this->rows.push_back(copytable.rows[i]);
@@ -430,7 +433,7 @@ public:
         }
 
         if (parsedQuery.command == "COPY") {
-            Table table(parsedQuery.other,parsedQuery.table);
+            Table table(parsedQuery.other,db.getTable(parsedQuery.table));
             return;
         }
 
