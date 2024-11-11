@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstdio>
 #include <unordered_map>
 #include <algorithm>
 #include <exception>
@@ -10,12 +11,12 @@
 
 using namespace std;
 
-// Struct to represent parsed queries
 struct ParsedQuery {
+    bool delete1=false;
     string command;
     string table;
     vector<string> columns;
-    vector<string> columnTypes;//new field for column type
+    vector<string> columnTypes;
     vector<string> values;
     string conditionColumn;
     string conditionOperator;
@@ -28,7 +29,7 @@ vector<string> tokenize(const string& query) {
     istringstream stream(query);
     vector<string> tokens;
     string token;
-    while (stream >> token) {
+    while (stream >> token){
         tokens.push_back(token);
     }
     return tokens;
@@ -227,7 +228,9 @@ public:
         }
         return result;
     }
-
+    vector<string> getcols(){
+        return columns;
+    }
 };
 
 class Database {
@@ -240,7 +243,7 @@ public:
     }
 
     // Load all tables from existing files
-    void loadExistingTables() {
+    void loadExistingTables(){
         string directoryPath = "./*.csv";  
         WIN32_FIND_DATAA findFileData;    // Use ANSI version
         HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);  // Use FindFirstFileA for ANSI
@@ -301,6 +304,14 @@ public:
             throw invalid_argument("Table does not exist.");
         }
         return tables.at(tableName);
+    }
+
+    void deletetable(string table){
+        auto it = tables.find(table);
+        if(it != tables.end()){
+            tables.erase(it);
+            remove((table+".csv").c_str());
+        }
     }
 };
 
@@ -387,7 +398,11 @@ public:
             }
         } 
         else if (parsedQuery.command == "DELETE") {
-            if (tokens[i++] != "FROM") throw invalid_argument("Expected FROM keyword after DELETE.");
+            if (tokens[i++] != "FROM"){
+                parsedQuery.table = tokens[i-1];
+                parsedQuery.delete1 = true;
+                return parsedQuery;
+            }
             parsedQuery.table = tokens[i++];
 
             // Optional WHERE clause
@@ -449,10 +464,31 @@ public:
             }
 
             // Print the selected rows
-            for (const auto &col : parsedQuery.columns) {
-                cout << col << "\t";
+            if (parsedQuery.columns[0]=="*"){
+                for (const auto &col : table.getcols()) {
+                    cout << col << "\t";
+                }
+                cout<<endl;
+                for (const auto &col : table.getcols()) {
+                    for(int j=0;j<col.size();j++){
+                        cout<<"-";
+                    }
+                    cout << "\t";
+                }
             }
-            cout << "\n";
+            else{
+                for (const auto &col : parsedQuery.columns) {
+                    cout << col << "\t";
+                }
+                cout<<endl;
+                for (const auto &col : parsedQuery.columns) {
+                    for(int j=0;j<col.size();j++){
+                        cout<<"-";
+                    }
+                    cout << "\t";
+                }
+            }
+            cout<<endl;
 
             for (const auto &row : selectedRows) {
                 for (const auto &cell : row) {
@@ -469,6 +505,10 @@ public:
                             parsedQuery.conditionOperator, parsedQuery.conditionValue);
         } 
         else if (parsedQuery.command == "DELETE") {
+            if(parsedQuery.delete1){
+                db.deletetable(parsedQuery.table);
+                return;
+            }
             table.deleteRows(parsedQuery.conditionColumn, parsedQuery.conditionOperator, parsedQuery.conditionValue);
         }
     }
@@ -486,6 +526,13 @@ int main() {
     while (true) {
         cout << "DB> ";
         getline(cin, command);
+        
+        if(command.size()>=2 && command[0]=='-' && command[1]=='-'){
+
+            cout << "Query executed successfully.\n";
+            continue;
+        }
+
         if (command == "EXIT") break;
 
         try {

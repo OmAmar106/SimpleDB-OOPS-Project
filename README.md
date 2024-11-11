@@ -15,10 +15,13 @@
    >> CREATE TABLE tablename ( columnname datatype .. )
    >> INSERT INTO tablename VALUES data
    >> SELECT * FROM tablename
+   >> SELECT col1 , col2 .... FROM tablename
    >> SELECT * FROM tablename where columnname = data
    >> UPDATE tablename SET columnmname = newdata WHERE columnname = olddata
    >> DELETE FROM tablename WHERE columnname = data
    >> COPY FROM oldtable TO newtable
+   >> DELETE tablename
+   >> --Comment
 ```
 
 ## Prerequisites
