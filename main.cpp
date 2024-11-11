@@ -212,6 +212,25 @@ private:
     unordered_map<string, Table> tables;
 
 public:
+    Database() {
+        loadExistingTables();
+    }
+
+    // Load all tables from existing files
+    void loadExistingTables() {
+        // Specify the directory where tables are stored
+        string directoryPath = "./";  //for current directory
+        
+        for (const auto& entry : filesystem::directory_iterator(directoryPath)) {
+            if (entry.path().extension() == ".csv") {
+                string tableName = entry.path().stem().string();
+                
+                // Open the file 
+                tables.emplace(tableName, Table(tableName));
+                tables.at(tableName).loadFromFile();  // Load data from file into the Table obj
+            }
+        }
+    }
     // void createTable(const string &tableName) {
     //     tables.emplace(tableName, Table(tableName));
     //     tables.at(tableName).createFile();  // Ensure file is created immediately
