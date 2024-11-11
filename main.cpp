@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <exception>
+#include <windows.h>
 
 using namespace std;
 
@@ -59,6 +60,7 @@ private:
 public:
     //Table(const string &name) : name(name) {}
     Table(const string &name, const vector<string> &cols, const vector<string> &types) : name(name), columns(cols), columnTypes(types) {}
+    Table(const string &name) : name(name) {}
     void createFile() {
         ofstream file(name + ".csv");
         if (!file.is_open()) {
@@ -99,6 +101,10 @@ public:
     }
 
     void addRow(const vector<string> &values) {
+        // cout<<values.size()<<columns.size()<<endl;
+        // for(int i=0;i<values.size();i++){
+        //     cout<<values[i]<<endl;
+        // }
         if (values.size() != columns.size()) {
             cerr << "Error: Row size does not match column count.\n";
             return;
@@ -218,18 +224,33 @@ public:
 
     // Load all tables from existing files
     void loadExistingTables() {
-        // Specify the directory where tables are stored
-        string directoryPath = "./";  //for current directory
-        
-        for (const auto& entry : filesystem::directory_iterator(directoryPath)) {
-            if (entry.path().extension() == ".csv") {
-                string tableName = entry.path().stem().string();
-                
-                // Open the file 
-                tables.emplace(tableName, Table(tableName));
-                tables.at(tableName).loadFromFile();  // Load data from file into the Table obj
-            }
+        string directoryPath = "./*.csv";  
+        WIN32_FIND_DATAA findFileData;    // Use ANSI version
+        HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);  // Use FindFirstFileA for ANSI
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            cerr << "Failed to open directory or no CSV files found." << endl;
+            return;
         }
+
+        do {
+            // Get the filename of the found file
+            string fileName = findFileData.cFileName;
+            
+            // Check if the file has a ".csv" extension
+            if (fileName.size() >= 4 && fileName.substr(fileName.size() - 4) == ".csv") {
+                // Remove ".csv" extension to get the table name
+                string tableName = fileName.substr(0, fileName.find_last_of('.'));
+                
+                // Insert the table into the map and load data from file
+                tables.emplace(tableName, Table(tableName));
+                tables.at(tableName).loadFromFile();
+            }
+            
+        } while (FindNextFileA(hFind, &findFileData) != 0);  // Continue finding the next file
+
+        // Close the handle after we’re done
+        FindClose(hFind);
     }
     // void createTable(const string &tableName) {
     //     tables.emplace(tableName, Table(tableName));
