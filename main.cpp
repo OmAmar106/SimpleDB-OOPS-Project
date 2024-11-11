@@ -203,9 +203,8 @@ public:
             condIndex = distance(columns.begin(), it);
         }
 
-        // Select rows that meet the condition (if any)
         for (const auto &row : rows) {
-            if (condIndex == -1 || // No condition specified
+            if (condIndex == -1 ||
                 (conditionOperator == "=" && row[condIndex] == conditionValue) ||
                 (conditionOperator == "!=" && row[condIndex] != conditionValue) ||
                 (conditionOperator == "<" && row[condIndex] < conditionValue) ||
@@ -272,11 +271,10 @@ public:
         // }
     }
 
-    // Load all tables from existing files
     void loadExistingTables(){
         string directoryPath = "./*.csv";  
-        WIN32_FIND_DATAA findFileData;    // Use ANSI version
-        HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);  // Use FindFirstFileA for ANSI
+        WIN32_FIND_DATAA findFileData; 
+        HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);
 
         if (hFind == INVALID_HANDLE_VALUE) {
             cerr << "Failed to open directory or no CSV files found." << endl;
@@ -359,7 +357,6 @@ public:
         parsedQuery.command = tokens[0];
         size_t i = 1;
 
-        // Command-specific parsing logic
         // if (parsedQuery.command == "CREATE") {
         //     if (tokens[i++] != "TABLE") throw invalid_argument("Expected TABLE keyword after CREATE.");
         //     parsedQuery.table = tokens[i++];
@@ -370,12 +367,11 @@ public:
 
             if (tokens[i++] != "(") throw invalid_argument("Expected '(' after table name.");
 
-                // Parse column names and types
                 while (tokens[i] != ")") {
                     parsedQuery.columns.push_back(tokens[i++]);
                     parsedQuery.columnTypes.push_back(tokens[i++].substr(0, tokens[i].length() - 1));  // Strip trailing ','
 
-                    if (tokens[i] == ")") break;  // End parsing on ')'
+                    if (tokens[i] == ")") break;
                     else if (tokens[i++] != ",") throw invalid_argument("Expected ',' between columns.");
                 }
         }
@@ -384,20 +380,17 @@ public:
             parsedQuery.table = tokens[i++];
             if (tokens[i++] != "VALUES") throw invalid_argument("Expected VALUES keyword after table name.");
 
-            // Collect values
             for (; i < tokens.size(); ++i) {
                 parsedQuery.values.push_back(tokens[i]);
             }
         } 
         else if (parsedQuery.command == "SELECT") {
-            // Check for columns or "*" for all
             while (tokens[i] != "FROM") {
                 parsedQuery.columns.push_back(tokens[i++]);
             }
-            i++;  // Skip "FROM"
+            i++;
             parsedQuery.table = tokens[i++];
             
-            // Optional WHERE clause
             if (i < tokens.size() && tokens[i] == "WHERE") {
                 i++;
                 parsedQuery.conditionColumn = tokens[i++];
@@ -409,12 +402,10 @@ public:
             parsedQuery.table = tokens[i++];
             if (tokens[i++] != "SET") throw invalid_argument("Expected SET keyword after table name.");
             
-            // Column to update and new value
             parsedQuery.columns.push_back(tokens[i++]);
             if (tokens[i++] != "=") throw invalid_argument("Expected = after column name.");
             parsedQuery.values.push_back(tokens[i++]);
 
-            // Optional WHERE clause
             if (i < tokens.size() && tokens[i] == "WHERE") {
                 i++;
                 parsedQuery.conditionColumn = tokens[i++];
@@ -430,7 +421,6 @@ public:
             }
             parsedQuery.table = tokens[i++];
 
-            // Optional WHERE clause
             if (i < tokens.size() && tokens[i] == "WHERE") {
                 i++;
                 parsedQuery.conditionColumn = tokens[i++];
@@ -442,7 +432,7 @@ public:
             if (tokens[i++] != "FROM") throw invalid_argument("Expected FROM keyword after DELETE.");
             parsedQuery.table = tokens[i++];
             if (tokens[i++] != "TO") throw invalid_argument("Expected FROM keyword after DELETE.");
-            // Optional WHERE clause
+
             parsedQuery.other = tokens[i++];
             //ab is table ko find karna hain
             
@@ -484,7 +474,7 @@ public:
         Table &table = db.getTable(parsedQuery.table);
 
         if (parsedQuery.command == "SELECT") {
-            // Call selectRows in Table and display the result
+
             auto selectedRows = table.selectRows(parsedQuery.columns, parsedQuery.conditionColumn,
                                                 parsedQuery.conditionOperator, parsedQuery.conditionValue);
             if (selectedRows.empty()) {
