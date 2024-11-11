@@ -42,6 +42,9 @@
    >> ISEQUAL tablename tablename1  
 ```
 ```bash
+   >> SHOW TABLES  
+```
+```bash
    >> --Comment
 ```
 

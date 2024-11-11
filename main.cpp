@@ -263,6 +263,7 @@ public:
 class Database {
 private:
     unordered_map<string, Table> tables;
+    static int count;
 
 public:
     Database() {
@@ -272,9 +273,22 @@ public:
         // }
     }
 
+    static int Tablecount(){
+        return count;
+    }
+
+    void print(){
+        int count1 = 1;
+        cout<<endl<<"Number of Tables : "<<count<<endl;
+        for(auto it:tables){
+            cout<<count1<<". "<<it.first<<endl;
+            count1 += 1;
+        }
+        cout<<endl;
+    }
     // Load all tables from existing files
     void loadExistingTables(){
-        string directoryPath = "./*.csv";  
+        string directoryPath = "./*.csv";
         WIN32_FIND_DATAA findFileData;    // Use ANSI version
         HANDLE hFind = FindFirstFileA(directoryPath.c_str(), &findFileData);  // Use FindFirstFileA for ANSI
 
@@ -284,6 +298,7 @@ public:
         }
 
         do {
+            count += 1;
             string fileName = findFileData.cFileName;
             
             if (fileName.size() >= 4 && fileName.substr(fileName.size() - 4) == ".csv") {
@@ -339,6 +354,8 @@ public:
         }
     }
 };
+
+int Database::count = 0;
 
 class QueryParser {
 private:
@@ -457,6 +474,9 @@ public:
             parsedQuery.table = tokens[i++];
             parsedQuery.other = tokens[i++];
         }
+        else if(parsedQuery.command=="SHOW"){
+            parsedQuery.other = "TABLE";
+        }
         else {
             throw invalid_argument("Unsupported command.");
         }
@@ -470,6 +490,10 @@ public:
         //     db.createTable(parsedQuery.table);
         //     return;
         // }
+        if (parsedQuery.command=="SHOW" && parsedQuery.other=="TABLE"){
+            db.print();
+            return;;
+        }
         if (parsedQuery.command == "CREATE") {
             db.createTable(parsedQuery.table, parsedQuery.columns, parsedQuery.columnTypes);
             cout << "Table '" << parsedQuery.table << "' created successfully.\n";
@@ -553,14 +577,14 @@ public:
 };
 
 int main() {
-    Database db;
-    QueryParser parser(db);
     string command;
 
     cout << "Welcome to SimpleDB! Type 'EXIT' to quit.\n";
     cout << "Available commands: CREATE, SELECT, INSERT, UPDATE, DELETE\n\n";
 
     while (true) {
+        Database db;
+        QueryParser parser(db);
         cout << "DB> ";
         getline(cin, command);
         
@@ -585,6 +609,6 @@ int main() {
         }
     }
 
-    cout << "Goodbye!\n";
+    cout << "Thank You for Using!\n";
     return 0;
 }
