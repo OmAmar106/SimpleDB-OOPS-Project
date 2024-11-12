@@ -6,7 +6,7 @@ public:
     string name;
     string username;
     string password;
-    vector<string> history;  // Keeps track of login history
+    vector<string> history;
 
     User() {}
 
@@ -25,7 +25,6 @@ public:
         }
     }
 
-    // Method to display data for editing
     void editUserInfo() {
         cout << "Enter new name: ";
         cin >> name;
@@ -54,7 +53,6 @@ public:
             
             User user(name, username, password);
 
-            // Get user history (if any)
             while (getline(ss, history, ',')) {
                 user.addHistory(history);
             }
@@ -137,7 +135,7 @@ public:
         User* user = login(username, password);
         if (user) {
             cout << "Login successful!" << endl;
-            string timestamp = "Login at XYZ time";  // Example timestamp (You can implement actual timestamp)
+            string timestamp = "Login at XYZ time";
             user->addHistory(timestamp);
             user->editUserInfo();
             cout << "User information updated." << endl;
