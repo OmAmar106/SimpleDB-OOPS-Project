@@ -24,7 +24,7 @@
    >> SELECT col1 , col2 .... FROM tablename
 ```
 ```bash
-   >> SELECT * FROM tablename where columnname = data
+   >> SELECT * FROM tablename WHERE columnname = data
 ```
 ```bash
    >> UPDATE tablename SET columnmname = newdata WHERE columnname = olddata
